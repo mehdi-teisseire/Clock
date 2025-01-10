@@ -3,17 +3,24 @@ from threading import Thread
 import time
 import os
 
-
-
 def refresh_screen():
     os.system("cls" if os.name == "nt" else "clear")
+
+def check_alarm(alarm_time):
+    while True:
+        current_time = datetime.now().strftime("%H:%M:%S")
+        if current_time <= alarm_time:
+            print("\nALARM!")
+            break
+        time.sleep(1)
 
 def display_time():
     while True: 
         current_time = datetime.now().strftime("%H:%M:%S")
-       # refresh_screen()
+        refresh_screen()
         print(current_time)
         time.sleep(1)
+        
 
 def display_custom_time(custom_time):
     while True:
@@ -22,26 +29,28 @@ def display_custom_time(custom_time):
         time.sleep(1)
         custom_time += timedelta(seconds=1)
 
-
 def get_user_choice():
     while True:
-        user_choice = input("Would you like to set a new time on the clock ? (y/n): ").lower()
-        if user_choice in ['y', 'n']:
-            return user_choice == 'y'
-        print("Please enter 'y' or 'n'")
+        user_choice = input("Choose an option:\n1. Set custom time\n2. Set alarm\n3. Use current time\nYour choice (1/2/3): ")
+        if user_choice in ['1', '2', '3']:
+            return user_choice
+        print("Please enter '1', '2', or '3'")
 
-def clock_menu():
-    alarm_str = input('HH:MM:SS').strip()
-    alarm = datetime.strptime(alarm_str, "%H:%M:%S")
-    print(f'alarm set to {alarm.strftime('%H:%M:%S')}')
-
-    if alarm <= datetime.now:
-        print('driiing')
-    
+def set_alarm():
+    while True:
+        try:
+            alarm_str = input('Enter alarm time (HH:MM:SS): ').strip()
+            alarm_time = datetime.strptime(alarm_str, "%H:%M:%S").strftime("%H:%M:%S")
+            print(f'Alarm set for {alarm_time}')
+            return alarm_time
+        except ValueError:
+            print("Invalid time format. Please use HH:MM:SS")
 
 def main():
     try:
-        if get_user_choice():
+        choice = get_user_choice()
+        
+        if choice == '1':
             while True:
                 time_str = input("Please enter the time in the format HH:MM:SS: ").strip()
                 try:
@@ -50,9 +59,27 @@ def main():
                     break
                 except ValueError:
                     print("Invalid time format. Please use HH:MM:SS")
+        
+        elif choice == '2':
+            alarm_time = set_alarm()
+            # Create two threads - one for the clock and one for the alarm
+            clock_thread = Thread(target=display_time)
+            alarm_thread = Thread(target=check_alarm, args=(alarm_time,))
+            
+            clock_thread.daemon = True
+            alarm_thread.daemon = True
+            
+            clock_thread.start()
+            alarm_thread.start()
+            
+            # Keep the main thread running
+            alarm_thread.join()
+            
         else:
             display_time()
+            
     except KeyboardInterrupt:
         print("\nExiting clock...")
 
-main()
+if __name__ == "__main__":
+    main()
