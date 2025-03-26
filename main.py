@@ -27,12 +27,14 @@ def display_screen(clock_time, alarm_status=""):
     
     menu_text = """
 Menu Options:
+-------------------
 1. Set custom time
 2. Set alarm
 3. Use current time
 4. Switch clock format (12/24)
 5. Pause/Resume time
 6. Exit clock
+--------------------
 Your choice (1/2/3/4/5/6): """
 
     with screen_lock:  # thread-safe screen updates
